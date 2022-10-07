@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/datatables.min.css' %}">
+    <link rel="stylesheet" href="{% static 'fonts/graphik_font.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap5.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/icons.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <div class="rw_login_wrapper">
+        <div class="rw_login_inner">
+            <form action="" method="post">
+                {% csrf_token %}
+                <h1>Login as Agency</h1>
+                <div class="rw_form_inputs">
+                    <div class="rw_input">
+                        {{loginForm.username}}
+                        <span class="input_icon email"></span>
+                    </div>
+                </div>
+                <div class="rw_form_inputs">
+                    <div class="rw_input">
+                        {{loginForm.password}}
+                        <span class="input_icon rw_eye"></span>
+                    </div>
+                </div>
+                <div class="rw_forgot_remember">
+                    <div class="rw_checkbox ">
+                        <input type="checkbox" id="checkbox" class="check_input" checked>
+                        <label for="checkbox">Remember me</label>
+                    </div>
+                    <div class="forgot_password">
+                        <a href="javascript:;">forgot password?</a>
+                    </div>
+                </div>
+                <div class="login_btns">
+                    <button type="submit" class="login_btn">login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+</body>
+</html>
