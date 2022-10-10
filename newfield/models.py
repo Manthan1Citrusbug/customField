@@ -40,7 +40,7 @@ class custom_field(models.Model):
     field_name = models.CharField(max_length = 20)
     field_type = models.CharField(max_length = 15, choices = type_list)
     place_holder = models.CharField(max_length = 50)
-    add_date = models.DateTimeField(default = datetime.today)
+    add_date = models.DateTimeField(default = datetime.now())
     agent_id = models.ForeignKey(User, default=None,on_delete=models.CASCADE,null=True)
 
 class field_data(models.Model):

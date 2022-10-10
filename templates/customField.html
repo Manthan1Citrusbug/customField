@@ -61,7 +61,7 @@
             <div class="rw_tabs">
                 <ul class="nav rw_tab_ul" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <a href="javascript:;" class="active tab_link" id="business_settings_tab" data-bs-toggle="tab" data-bs-target="#business_settings" role="tab"  aria-selected="true">Business settings</a>
+                        <a href="javascript:;" class="tab_link" id="business_settings_tab" data-bs-toggle="tab" data-bs-target="#business_settings" role="tab"  aria-selected="false">Business settings</a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <a href="javascript:;" class="tab_link" id="campaign_user_tab" data-bs-toggle="tab" data-bs-target="#campaign_user" role="tab"  aria-selected="false">Users</a>
@@ -70,13 +70,13 @@
                         <a href="javascript:;" class="tab_link" id="campaign_phone_numbers_tab" data-bs-toggle="tab" data-bs-target="#campaign_phone_numbers" role="tab"  aria-selected="false">Phone Numbers</a>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <a href="javascript:;" class="tab_link" id="campaign_custom_fields_tab" data-bs-toggle="tab" data-bs-target="#campaign_custom_fields" role="tab"  aria-selected="false">Custom fields</a>
+                        <a href="javascript:;" class="active tab_link" id="campaign_custom_fields_tab" data-bs-toggle="tab" data-bs-target="#campaign_custom_fields" role="tab"  aria-selected="true">Custom fields</a>
                     </li>
                 </ul>
                 
                 <!-- Tab panes -->
                 <div class="tab-content">
-                    <div class="tab-pane active" id="business_settings" role="tabpanel" >
+                    <div class="tab-pane" id="business_settings" role="tabpanel" >
                         <div class="rw_inner_form_inner_area">
                             <div class="rw_inn_form_box">
                                 <div class="row">
@@ -524,7 +524,7 @@
                             </div>  
                         </div>
                     </div>
-                    <div class="tab-pane" id="campaign_custom_fields" role="tabpanel" >
+                    <div class="tab-pane active" id="campaign_custom_fields" role="tabpanel" >
                         <div class="rw_inner_tab_area user_tab_content ">
                             <div class="admin_user_select">  
                                 <div class="rw_selectbox tags">
@@ -1114,11 +1114,9 @@
                 // handle a successful response
                 success : function(returnValue) {
                     if ('success' in returnValue){
-                        document.getElementById('campaign_custom_fields_tab').classList.add('active');
-                        document.getElementById('campaign_custom_fields_tab').setAttribute('aria-selected ', 'true');
-                        document.getElementById('compaign_custom_field').append(               
-                            '<tr><td>'+returnValue[current_field].name+'</td><td>'+returnValue[current_field].type+'</td><td><div class="default_label"><span>'+returnValue[current_field].place_holder+'</span></div></td><td>Added on'+returnValue[current_field].date+'</td><td class="text-center"><div class="action_dropdown"><ul class="drop_ul"><li class="position-relative"><a href="javascript:;" class="action_btn"><img src="{% static "images/icons/action.svg" %}" alt="action"></a><ul class="action_submenu"><li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static "images/icons/edit.svg" %}" alt="image">Edit</a></li><li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static "images/icons/delete.svg" %}" alt="image">delete</a></li><li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static "images/icons/colored_icon/campaing.svg" %}" alt="image">Send Broadcast</a></li></ul></li></ul></div></td></tr>');
+                        location.reload()
                     }
+
                     else{
                         submitForm.reset();
                         alert(returnValue.error)

@@ -74,14 +74,8 @@ class customFieldClass(View):
                     place_holder = formValue["place_holder"].value(), 
                     agent_id = request.user
                 )
-                current_field_obj = custom_field.objects.get(id = currrent_obj)
-                current_field = {
-                    'name':current_field_obj.field_name,
-                    'type':current_field_obj.field_type,
-                    'place_holder':current_field_obj.place_holder,
-                    'date':current_field_obj.add_date,
-                }
-                return JsonResponse({'success':'success','current_field':current_field})
+                current_field_obj = custom_field.objects.get(id = currrent_obj.id)
+                return JsonResponse({'success':'success'})
         return JsonResponse({'error':'Something Wrong Happened please try again'})
         return render(request, self.template_name, {'customFieldForm':self.customField_form})
 
