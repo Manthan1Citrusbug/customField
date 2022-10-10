@@ -100,9 +100,8 @@ class contactFormClass(View):
         for contact_1 in all_contact:
             contact_data = {
                 'number':contact_1.phone_no,
-                'name':contact_1.first_name+" "+contact.last_name,
+                'name':contact_1.first_name+" "+contact_1.last_name,
                 'date':contact_1.add_date,
-                'place_holder':contact_1.place_holder,
             }
             contacts_data.append(contact_data)
         return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data,'contacts_data':contacts_data})

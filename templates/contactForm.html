@@ -849,8 +849,8 @@
                     'phone_no':document.getElementById("id_phone_no").value, 
                     'first_name':document.getElementById("id_first_name").value,
                     'last_name':document.getElementById("id_last_name").value,
-                    'birthday':"2022-"+document.getElementById("rw_date_month3").value,
-                    'anniversary':"2022-"+document.getElementById("rw_date_month4").value,
+                    'birthday':document.getElementById("rw_date_month3").value,
+                    'anniversary':document.getElementById("rw_date_month4").value,
                     'tags':selected_value,
                     'override_timezone':document.getElementById("id_override_timezone").value,
             }
@@ -868,7 +868,7 @@
                 url : "", // the endpoint
                 type : "POST", // http method
                 headers: {'X-CSRFToken': csrftoken},
-                data : , // data sent with the post request
+                data : data_value, // data sent with the post request
                 // handle a successful response
                 success : function(returnValue) {
                     if ('success' in returnValue){
