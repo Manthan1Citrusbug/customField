@@ -30,8 +30,8 @@
                     <p>Client Account</p>
                 </div>
                 <div class="header_profile">
-                    <a href="javascript:;">
-                        <h4>Jones Ferdinand</h4>
+                    <a href="{% url 'logout' %}">
+                        <h4>{{ username }}</h4>
                         <div class="header_profile_image">
                             <img src="{% static 'images/profile.jpg' %}" alt="image">
                         </div>
@@ -45,16 +45,16 @@
             </div>
             <div class="rw_sidebar">
                 <div class="header_logo">
-                    <a href="client_dashboard.html"><img src="{% static 'images/logo.svg' %}" alt="logo"></a>
+                    <a href=""><img src="{% static 'images/logo.svg' %}" alt="logo"></a>
                 </div>
                 <ul>
-                    <li><a href="client_dashboard.html" ><img src="{% static 'images/icons/dashboard.svg' %}" alt="dashboard"></a></li>
-                    <li><a href="client_contact.html" class="active"><img src="{% static 'images/icons/contact.svg' %}" alt="contact"></a></li>
-                    <li><a href="client_list.html" ><img src="{% static 'images/icons/bar.svg' %}" alt="bar"></a></li>
-                    <li><a href="client_scheduled_broadcast.html"><img src="{% static 'images/icons/broadcast.svg' %}" alt="broadcast"></a></li>
-                    <li><a href="campaigns.html" ><img src="{% static 'images/icons/campaigns.svg' %}" alt="campaigns"></a></li>
-                    <li><a href="coupon.html"><img src="{% static 'images/icons/coupon.svg' %}" alt="coupon"></a></li>
-                    <li><a href="campaign_settings.html"><img src="{% static 'images/icons/settings.svg' %}" alt="settings"></a></li>
+                    <li><a href="" ><img src="{% static 'images/icons/dashboard.svg' %}" alt="dashboard"></a></li>
+                    <li><a href="" class="active"><img src="{% static 'images/icons/contact.svg' %}" alt="contact"></a></li>
+                    <li><a href="" ><img src="{% static 'images/icons/bar.svg' %}" alt="bar"></a></li>
+                    <li><a href=""><img src="{% static 'images/icons/broadcast.svg' %}" alt="broadcast"></a></li>
+                    <li><a href="" ><img src="{% static 'images/icons/campaigns.svg' %}" alt="campaigns"></a></li>
+                    <li><a href=""><img src="{% static 'images/icons/coupon.svg' %}" alt="coupon"></a></li>
+                    <li><a href="{% url 'customField' %}"><img src="{% static 'images/icons/settings.svg' %}" alt="settings"></a></li>
                 </ul>
             </div>
         </header>
@@ -572,6 +572,34 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-md-12">
+                            <div class="rw_form_inputs">
+                                <label class="rw_form_label">Phone Number</label>
+                                <div class="rw_input">
+                                    <input type="text" name="phone_no" placeholder="Enter Phone No" min_length="10" pattern="[0-9]+" maxlength="10" required="" id="id_phone_no">
+                                    <!-- <input type="number" placeholder="Phone Number" value="919999999999"> -->
+                                    <span class="input_icon phone"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if fields_data %}
+                            {% for field in fields_data %}
+                                <div class="col-md-12">
+                                    <div class="rw_form_inputs">
+                                        <label class="rw_form_label">{{ field.name }}</label>
+                                        <div class="rw_input">
+                                            {% if field.type == 'Large Text' %}
+                                                <textarea cols="70%" rows="3" name="{{field.name|lower}}"  ></textarea>
+                                            {% else %}
+                                                <input type="{{field.type}}" name="{{field.name|lower}}" {%if field.type == 'Date' %}class = date_input{%endif%} placeholder="{{field.place_holder}}"/>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
                 <div class="modal-footer">

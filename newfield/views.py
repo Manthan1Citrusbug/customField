@@ -45,7 +45,7 @@ class registerClass(View):
 
 
 
-@method_decorator(login_required, name='dispatch')
+@method_decorator(login_required(login_url=('../')), name='dispatch')
 class customFieldClass(View):
     customField_form = customFieldForm()
     template_name = 'customField.html'
@@ -86,7 +86,16 @@ class contactFormClass(View):
     contact_form = contactForm
     template_name = 'contactForm.html'
     def get(self, request):
-        return render(request, self.template_name, {'contactForm':self.contact_form})
+        all_fields = custom_field.objects.all().filter(agent_id = request.user.id)
+        fields_data = []
+        for field in all_fields:
+            field_data = {
+                'name':field.field_name,
+                'type':field.field_type,
+                'place_holder':field.place_holder,
+            }
+            fields_data.append(field_data)
+        return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data})
     
     def post(self, request):
         formValue = contactForm(request.POST)
@@ -95,8 +104,10 @@ class contactFormClass(View):
         return render(request, self.template_name, {'contactForm':self.contact_form})
 
 
+# document.getElementsByName("tags")[0].selectedOptions for getting value of multiple select 
+
 @method_decorator(login_required(login_url=('../')), name='dispatch')
 class logoutClass(View):
     def get(self, request):
         logout(request)
-        return redirect(loginClass.as_view())
+        return redirect("/")

@@ -29,7 +29,7 @@
                     <p>Client Account</p>
                 </div>
                 <div class="header_profile">
-                    <a href="javascript:;">
+                    <a href="{% url 'logout' %}">
                         <h4>{{username}}</h4>
                         <div class="header_profile_image">
                             <img src="{% static 'images/profile.jpg' %}" alt="image">
@@ -44,16 +44,16 @@
             </div>
             <div class="rw_sidebar">
                 <div class="header_logo">
-                    <a href="client_dashboard.html"><img src="{% static 'images/logo.svg' %}" alt="logo"></a>
+                    <a href=""><img src="{% static 'images/logo.svg' %}" alt="logo"></a>
                 </div>
                 <ul>
-                    <li><a href="client_dashboard.html" ><img src="{% static 'images/icons/dashboard.svg' %}" alt="dashboard"></a></li>
-                    <li><a href="client_contact.html"><img src="{% static 'images/icons/contact.svg' %}" alt="contact"></a></li>
-                    <li><a href="client_list.html"><img src="{% static 'images/icons/bar.svg' %}" alt="bar"></a></li>
-                    <li><a href="client_scheduled_broadcast.html"><img src="{% static 'images/icons/broadcast.svg' %}" alt="broadcast"></a></li>
-                    <li><a href="campaigns.html"><img src="{% static 'images/icons/campaigns.svg' %}" alt="campaigns"></a></li>
-                    <li><a href="coupon.html"><img src="{% static 'images/icons/coupon.svg' %}" alt="coupon"></a></li>
-                    <li><a href="campaign_settings.html" class="active"><img src="{% static 'images/icons/settings.svg' %}" alt="settings"></a></li>
+                    <li><a href="" ><img src="{% static 'images/icons/dashboard.svg' %}" alt="dashboard"></a></li>
+                    <li><a href="{% url 'contactForm' %}"><img src="{% static 'images/icons/contact.svg' %}" alt="contact"></a></li>
+                    <li><a href=""><img src="{% static 'images/icons/bar.svg' %}" alt="bar"></a></li>
+                    <li><a href=""><img src="{% static 'images/icons/broadcast.svg' %}" alt="broadcast"></a></li>
+                    <li><a href=""><img src="{% static 'images/icons/campaigns.svg' %}" alt="campaigns"></a></li>
+                    <li><a href=""><img src="{% static 'images/icons/coupon.svg' %}" alt="coupon"></a></li>
+                    <li><a href="" class="active"><img src="{% static 'images/icons/settings.svg' %}" alt="settings"></a></li>
                 </ul>
             </div>
         </header>

@@ -95,7 +95,7 @@ a:hover {
   margin-bottom: 16px;
   position: relative;
 }
-.rw_form_inputs .rw_input input {
+.rw_form_inputs .rw_input input textarea{
   width: 100%;
   height: 56px;
   background: #ffffff;
@@ -1508,7 +1508,7 @@ table.dataTable > thead .sorting_desc_disabled:after {
   width: 41%;
   max-width: 218px;
 }
-.revenue_setting .rev_input_wrapper .revenue_input_area .revenue_inputs .rw_form_inputs .rw_input input {
+.revenue_setting .rev_input_wrapper .revenue_input_area .revenue_inputs textarea{
   height: 40px;
   padding: 0 16px;
 }
