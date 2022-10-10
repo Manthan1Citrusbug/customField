@@ -68,16 +68,15 @@ class customFieldClass(View):
             if check_field.exists():
                 return JsonResponse({'error':'This Field is already created'})
             else:
-                currrent_obj = custom_field.objects.create(
+                custom_field.objects.create(
                     field_name=formValue["field_name"].value(), 
                     field_type = formValue["field_type"].value(), 
                     place_holder = formValue["place_holder"].value(), 
                     agent_id = request.user
                 )
-                current_field_obj = custom_field.objects.get(id = currrent_obj.id)
                 return JsonResponse({'success':'success'})
         return JsonResponse({'error':'Something Wrong Happened please try again'})
-        return render(request, self.template_name, {'customFieldForm':self.customField_form})
+        # return render(request, self.template_name, {'customFieldForm':self.customField_form})
 
 
 
@@ -86,7 +85,8 @@ class contactFormClass(View):
     contact_form = contactForm
     template_name = 'contactForm.html'
     def get(self, request):
-        all_fields = custom_field.objects.all().filter(agent_id = request.user.id)
+        all_fields = custom_field.objects.filter(agent_id = request.user.id)
+        all_contact = contact.objects.filter(agent_id = request.user.id)
         fields_data = []
         for field in all_fields:
             field_data = {
@@ -95,13 +95,41 @@ class contactFormClass(View):
                 'place_holder':field.place_holder,
             }
             fields_data.append(field_data)
-        return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data})
+        
+        contacts_data = []
+        for contact_1 in all_contact:
+            contact_data = {
+                'number':contact_1.phone_no,
+                'name':contact_1.first_name+" "+contact.last_name,
+                'date':contact_1.add_date,
+                'place_holder':contact_1.place_holder,
+            }
+            contacts_data.append(contact_data)
+        return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data,'contacts_data':contacts_data})
     
     def post(self, request):
         formValue = contactForm(request.POST)
-        print(formValue)
-        return HttpResponse(formValue)
-        return render(request, self.template_name, {'contactForm':self.contact_form})
+        check_contact = contact.objects.filter(
+            phone_no=formValue["phone_no"].value(),
+            agent_id = request.user)
+        if check_contact.exists():
+            return JsonResponse({'error':'This Field is already created'})
+        else:
+            contact.objects.create(
+                phone_no=formValue["phone_no"].value(), 
+                first_name = formValue["first_name"].value(),
+                last_name = formValue["last_name"].value(),
+                birthday = "2022-"+formValue["birthday"].value(),
+                anniversary = "2022-"+formValue["anniversary"].value(),
+                tags = formValue["tags"].value(),
+                override_timezone = formValue["override_timezone"].value(), 
+                agent_id = request.user
+            )
+            return JsonResponse({'success':'success'})
+        # return JsonResponse({'error':'Something Wrong Happened please try again'})
+        # print(formValue)
+        # return HttpResponse(formValue)
+        # return render(request, self.template_name, {'contactForm':self.contact_form})
 
 
 # document.getElementsByName("tags")[0].selectedOptions for getting value of multiple select 

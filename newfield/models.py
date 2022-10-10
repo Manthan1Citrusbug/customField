@@ -26,7 +26,9 @@ class contact(models.Model):
     birthday = models.DateField()
     anniversary = models.DateField()
     tags = models.CharField(max_length = 20, choices = tag_list)
-    override_timezone = models.DateField(max_length = 5, choices = timezone_list)
+    override_timezone = models.CharField(max_length = 5, choices = timezone_list)
+    add_date = models.DateTimeField(default = datetime.now())
+    agent_id = models.ForeignKey(User, default=None,on_delete=models.CASCADE,null=True)
 
 
 class custom_field(models.Model):
