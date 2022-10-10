@@ -16,7 +16,7 @@
 <body>
     <div class="rw_login_wrapper">
         <div class="rw_login_inner">
-            <form action="" method="post">
+            <form action="" id="login_form">
                 {% csrf_token %}
                 <h1>Login as Agency</h1>
                 <div class="rw_form_inputs">
@@ -44,9 +44,43 @@
                     <button type="submit" class="login_btn">login</button>
                 </div>
             </form>
+            <div class="error">
+                <p id="error"></p>
+            </div>
         </div>
     </div>
-    
+    <script>
+        var submitForm = document.getElementById('login_form');
+        submitForm.onsubmit = function(event) {
+            event.preventDefault();
+            var formData = new FormData(document.getElementById('login_form'));
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            $.ajax({
+                url : "", // the endpoint
+                type : "POST", // http method
+                headers: {'X-CSRFToken': csrftoken},
+                data : {'username':document.getElementById("id_username").value, 'password':document.getElementById("id_password").value}, // data sent with the post request
+                // handle a successful response
+                success : function(returnValue) {
+                    console.log('Inside ajax',returnValue);
+                    if ('success' in returnValue){
+                        location.replace(returnValue.success)
+                    }
+                    else{
+                        document.getElementById("id_username").value = '';
+                        document.getElementById("id_password").value = '';
+                        $('#error').text(returnValue.error)
+                    }
+                },
+
+                // handle a non-successful response
+                error : function(xhr,errmsg,err) {
+                    $('#error').text("Oops! We have encountered an error: "+errmsg); // add the error to the dom
+                    window.location.reload() // add the error to the dom
+                }
+            });
+        }
+    </script>
     <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>

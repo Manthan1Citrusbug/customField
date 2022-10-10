@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views import View
 from newfield.forms import *
 from django.contrib.auth import authenticate, login, logout
@@ -19,7 +19,9 @@ class loginClass(View):
             loginVerify = authenticate(request, username=loginForm_data['username'].value(), password=loginForm_data['password'].value())
             if loginVerify is not None:
                 login(request, loginVerify)
-                return HttpResponse("success")
+                return JsonResponse({'success': 'custom-field/'})
+            else:
+                return JsonResponse({'error':'Enter correct Email or Password'})
         return render(request, self.template_name, {'loginForm':self.login_Form})
 
 
@@ -48,17 +50,44 @@ class customFieldClass(View):
     customField_form = customFieldForm()
     template_name = 'customField.html'
     def get(self, request):
-        return render(request, self.template_name, {'customFieldForm':self.customField_form})
+        all_fields = custom_field.objects.all().filter(agent_id = request.user.id)
+        fields_data = []
+        for field in all_fields:
+            field_data = {
+                'name':field.field_name,
+                'type':field.field_type,
+                'place_holder':field.place_holder,
+                'date':field.add_date,
+            }
+            fields_data.append(field_data)
+        return render(request, self.template_name, {'customFieldForm':self.customField_form,'username':request.user.username, 'all_fields':fields_data})
     def post(self, request):
         formValue = customFieldForm(request.POST)
-        # if formValue.is_valid():
-        print(formValue)
-        return HttpResponse(f'{formValue["field_name"].value()} {formValue["field_type"].value()} {formValue["place_holder"].value()}')
+        if formValue.is_valid():
+            check_field = custom_field.objects.filter(field_name=formValue["field_name"].value(), field_type = formValue["field_type"].value(), agent_id = request.user)
+            if check_field.exists():
+                return JsonResponse({'error':'This Field is already created'})
+            else:
+                currrent_obj = custom_field.objects.create(
+                    field_name=formValue["field_name"].value(), 
+                    field_type = formValue["field_type"].value(), 
+                    place_holder = formValue["place_holder"].value(), 
+                    agent_id = request.user
+                )
+                current_field_obj = custom_field.objects.get(id = currrent_obj)
+                current_field = {
+                    'name':current_field_obj.field_name,
+                    'type':current_field_obj.field_type,
+                    'place_holder':current_field_obj.place_holder,
+                    'date':current_field_obj.add_date,
+                }
+                return JsonResponse({'success':'success','current_field':current_field})
+        return JsonResponse({'error':'Something Wrong Happened please try again'})
         return render(request, self.template_name, {'customFieldForm':self.customField_form})
 
 
 
-@method_decorator(login_required, name='dispatch')
+@method_decorator(login_required(login_url=('../')), name='dispatch')
 class contactFormClass(View):
     contact_form = contactForm
     template_name = 'contactForm.html'
@@ -72,7 +101,7 @@ class contactFormClass(View):
         return render(request, self.template_name, {'contactForm':self.contact_form})
 
 
-@method_decorator(login_required, name='dispatch')
+@method_decorator(login_required(login_url=('../')), name='dispatch')
 class logoutClass(View):
     def get(self, request):
         logout(request)

@@ -1,7 +1,8 @@
 from datetime import datetime
+from email.policy import default
 from tkinter import CASCADE
 from django.db import models
-
+from django.contrib.auth.models import User
 # Create your models here.
 
 class contact(models.Model):
@@ -30,19 +31,19 @@ class contact(models.Model):
 
 class custom_field(models.Model):
     type_list = (
-        ('CharField', 'Text'),
-        ('TextField', 'Large Text'),
-        ('DateField', 'Date'),
-        ('IntegerField', 'Numerical'),
+        ('Text', 'Text'),
+        ('Large Text', 'Large Text'),
+        ('Date', 'Date'),
+        ('Numerical', 'Numerical'),
     )
 
     field_name = models.CharField(max_length = 20)
     field_type = models.CharField(max_length = 15, choices = type_list)
     place_holder = models.CharField(max_length = 50)
     add_date = models.DateTimeField(default = datetime.today)
-    customer_id = models.ForeignKey(contact, on_delete=models.CASCADE)
+    agent_id = models.ForeignKey(User, default=None,on_delete=models.CASCADE,null=True)
 
 class field_data(models.Model):
-    custom_field_id = models.ForeignKey(custom_field, on_delete=models.CASCADE)
-    customer_id = models.ForeignKey(contact, on_delete=models.CASCADE)
+    custom_field_id = models.ForeignKey(custom_field,default=None, on_delete=models.CASCADE)
+    contact_id = models.ForeignKey(contact,default=None, on_delete=models.CASCADE)
     field_data = models.TextField()

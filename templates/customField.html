@@ -30,7 +30,7 @@
                 </div>
                 <div class="header_profile">
                     <a href="javascript:;">
-                        <h4>Jones Ferdinand</h4>
+                        <h4>{{username}}</h4>
                         <div class="header_profile_image">
                             <img src="{% static 'images/profile.jpg' %}" alt="image">
                         </div>
@@ -553,49 +553,32 @@
                                                 <th class="sorting_none text-center">actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody>                    
-                                            <tr>
-                                                <td>
-                                                    Webinar
-                                                    </td>
-                                                <td>Date</td>
-                                                    <td><div class="default_label"><span>webinar</span></div></td>
-                                                <td>Added on 3 Dec, 2021  03:00 PM</td>
-                                                <td class="text-center">
-                                                    <div class="action_dropdown">
-                                                    <ul class="drop_ul">
-                                                        <li class="position-relative"><a href="javascript:;" class="action_btn"><img src="{% static 'images/icons/action.svg' %}" alt="action"></a>
-                                                            <ul class="action_submenu">                                             
-                                                                <li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static 'images/icons/edit.svg' %}" alt="image">Edit</a></li>
-                                                                <li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static 'images/icons/delete.svg' %}" alt="image">delete</a></li>
-                                                                <li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static 'images/icons/colored_icon/campaing.svg' %}" alt="image">Send Broadcast</a></li>
-                                                            </ul>
-                                                        </li>
-                                                    </ul>                                    
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    Webinar
-                                                    </td>
-                                                <td>Date</td>
-                                                    <td><div class="default_label"><span>webinar</span></div></td>
-                                                <td>Added on 3 Dec, 2021  03:00 PM</td>
-                                                <td class="text-center">
-                                                    <div class="action_dropdown">
-                                                    <ul class="drop_ul">
-                                                        <li class="position-relative"><a href="javascript:;" class="action_btn"><img src="{% static 'images/icons/action.svg' %}" alt="action"></a>
-                                                            <ul class="action_submenu">                                             
-                                                                <li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static 'images/icons/edit.svg' %}" alt="image">Edit</a></li>
-                                                                <li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static 'images/icons/delete.svg' %}" alt="image">delete</a></li>
-                                                                <li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static 'images/icons/colored_icon/campaing.svg' %}" alt="image">Send Broadcast</a></li>
-                                                            </ul>
-                                                        </li>
-                                                    </ul>                                    
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                        <tbody>
+                                            {% if all_fields%}
+                                                {% for field in all_fields %}                    
+                                                    <tr>
+                                                        <td>
+                                                            {{ field.name }}
+                                                            </td>
+                                                        <td>{{ field.type }}</td>
+                                                            <td><div class="default_label"><span>{{ field.place_holder}}</span></div></td>
+                                                        <td>Added on {{field.date}}</td>
+                                                        <td class="text-center">
+                                                            <div class="action_dropdown">
+                                                            <ul class="drop_ul">
+                                                                <li class="position-relative"><a href="javascript:;" class="action_btn"><img src="{% static 'images/icons/action.svg' %}" alt="action"></a>
+                                                                    <ul class="action_submenu">                                             
+                                                                        <li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static 'images/icons/edit.svg' %}" alt="image">Edit</a></li>
+                                                                        <li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static 'images/icons/delete.svg' %}" alt="image">delete</a></li>
+                                                                        <li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static 'images/icons/colored_icon/campaing.svg' %}" alt="image">Send Broadcast</a></li>
+                                                                    </ul>
+                                                                </li>
+                                                            </ul>                                    
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            {% endif %}
                                         </tbody>
                                     </table>
                                 </div>
@@ -1032,7 +1015,7 @@
     <div class="modal fade rw_modal client_list_modal" id="add_custom_field" tabindex="-1"  aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <form action="" method="post">
+            <form action="" method="post" id="customField-form">
                 {% csrf_token %}
                 <div class="modal-header">
                     <div class="modal_title">
@@ -1105,7 +1088,45 @@
         </div>
         </div>
     </div> 
-    </div> 
+    </div>
+    <script>
+        var submitForm = document.getElementById('customField-form');
+        submitForm.onsubmit = function(event) {
+            event.preventDefault();
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var radio_list = document.getElementsByName("field_type")
+            var radio_value;
+            for (var i = 0; i < radio_list.length; i++) {       
+                if (radio_list[i].checked) {
+                    radio_value = radio_list[i].value;
+                    break;
+                }
+            }
+            $.ajax({
+                url : "", // the endpoint
+                type : "POST", // http method
+                headers: {'X-CSRFToken': csrftoken},
+                data : {
+                    'field_name':document.getElementById("id_field_name").value, 
+                    'field_type':radio_value,
+                    'place_holder':document.getElementById("id_place_holder").value,
+                }, // data sent with the post request
+                // handle a successful response
+                success : function(returnValue) {
+                    if ('success' in returnValue){
+                        document.getElementById('campaign_custom_fields_tab').classList.add('active');
+                        document.getElementById('campaign_custom_fields_tab').setAttribute('aria-selected ', 'true');
+                        document.getElementById('compaign_custom_field').append(               
+                            '<tr><td>'+returnValue[current_field].name+'</td><td>'+returnValue[current_field].type+'</td><td><div class="default_label"><span>'+returnValue[current_field].place_holder+'</span></div></td><td>Added on'+returnValue[current_field].date+'</td><td class="text-center"><div class="action_dropdown"><ul class="drop_ul"><li class="position-relative"><a href="javascript:;" class="action_btn"><img src="{% static "images/icons/action.svg" %}" alt="action"></a><ul class="action_submenu"><li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static "images/icons/edit.svg" %}" alt="image">Edit</a></li><li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static "images/icons/delete.svg" %}" alt="image">delete</a></li><li><a href="javascript:;" class="remove_action" data-bs-toggle="modal" data-bs-target="#"><img src="{% static "images/icons/colored_icon/campaing.svg" %}" alt="image">Send Broadcast</a></li></ul></li></ul></div></td></tr>');
+                    }
+                    else{
+                        submitForm.reset();
+                        alert(returnValue.error)
+                    }
+                },
+            });
+        }
+    </script>
     <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>

@@ -1,17 +1,18 @@
+from tkinter import Widget
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from newfield.models import *
 from django import forms
 
 class loginForm(forms.Form):
-    username = forms.CharField(widget = forms.TextInput(attrs = {'placeholder':"Enter username"}))
+    username = forms.CharField(widget = forms.TextInput(attrs = {'placeholder':"Enter Username"}))
     password = forms.CharField(widget=forms.PasswordInput(attrs = {'placeholder':"Enter Password"}), min_length = 8)
 
 class registerForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username','email','password1','password2']
-
+    
     def save(self, commit=True):
         user_data = super(registerForm, self).save(commit=False)
         user_data.email = self.cleaned_data['email']
