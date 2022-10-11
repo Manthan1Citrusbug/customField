@@ -1,4 +1,3 @@
-from tkinter import Widget
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from newfield.models import *
@@ -26,8 +25,8 @@ class contactForm(forms.ModelForm):
         fields = ['phone_no','first_name','last_name','birthday','anniversary','tags','override_timezone']
         widgets = {
             'phone_no': forms.TextInput(attrs = {'placeholder':'Enter Phone No','min_length':10, 'pattern':'[0-9]+'}),
-            'first_name': forms.TextInput(attrs = {'placeholder':'Enter Firstname'}),
-            'last_name': forms.TextInput(attrs = {'placeholder':'Enter Lastname'}),
+            'first_name': forms.TextInput(attrs = {'placeholder':'Enter Firstname','pattern':'[a-zA-Z]+'}),
+            'last_name': forms.TextInput(attrs = {'placeholder':'Enter Lastname','pattern':'[a-zA-Z]+'}),
             'birthday': forms.DateInput(attrs = {'class':'date_input', 'id':'rw_date_month3','placeholder':"mm-dd"}),
             'anniversary': forms.DateInput(attrs = {'class':'date_input', 'id':'rw_date_month4','placeholder':"mm-dd"}),
             'tags': forms.SelectMultiple(attrs = {'class':"js-states form-control",'id':"add_cont"}),

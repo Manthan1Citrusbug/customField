@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views import View
+import json
 from newfield.forms import *
+from newfield.models import *
 from django.contrib.auth import authenticate, login, logout
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
@@ -84,46 +86,79 @@ class customFieldClass(View):
 class contactFormClass(View):
     contact_form = contactForm
     template_name = 'contactForm.html'
-    def get(self, request):
-        all_fields = custom_field.objects.filter(agent_id = request.user.id)
-        all_contact = contact.objects.filter(agent_id = request.user.id)
-        fields_data = []
-        for field in all_fields:
-            field_data = {
-                'name':field.field_name,
-                'type':field.field_type,
-                'place_holder':field.place_holder,
-            }
-            fields_data.append(field_data)
-        
-        contacts_data = []
-        for contact_1 in all_contact:
+    def get(self, request, *id):
+        if id is None:
+            all_fields = custom_field.objects.filter(agent_id = request.user.id)
+            all_contact = contact.objects.filter(agent_id = request.user.id)
+            fields_data = []
+            for field in all_fields:
+                field_data = {
+                    'id':field.id,
+                    'name':field.field_name,
+                    'type':field.field_type,
+                    'place_holder':field.place_holder,
+                }
+                fields_data.append(field_data)
+            
+            contacts_data = []
+            for cur_contant in all_contact:
+                contact_data = {
+                    'id':cur_contant.id,
+                    'number':cur_contant.phone_no,
+                    'name':cur_contant.first_name+" "+cur_contant.last_name,
+                    'date':cur_contant.add_date,
+                }
+                contacts_data.append(contact_data)
+            return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data,'contacts_data':contacts_data})
+        else:
+            all_fields = custom_field.objects.filter(agent_id = request.user.id)
+            fields_data = []
+            for field in all_fields:
+                cur_field = {
+                    'id':field.id,
+                    'name':field.field_name,
+                    'type':field.field_type,
+                    'place_holder':field.place_holder,
+                }
+                fields_data.append(cur_field)
+            cur_contant = contact.objects.get(pk = id)
             contact_data = {
-                'number':contact_1.phone_no,
-                'name':contact_1.first_name+" "+contact_1.last_name,
-                'date':contact_1.add_date,
+                'id':cur_contant.id,
+                'number':cur_contant.phone_no,
+                'name':cur_contant.first_name+" "+cur_contant.last_name,
+                'date':cur_contant.add_date,
             }
             contacts_data.append(contact_data)
-        return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data,'contacts_data':contacts_data})
-    
+            field_data_obj = field_data.objects.filter(contact_id = id)
+            return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data,'contacts_data':contacts_data})
+    # def get(self, request, id):
+    #     return render(request, self.template_name, {'success':'success','id':id})
     def post(self, request):
-        formValue = contactForm(request.POST)
-        check_contact = contact.objects.filter(
-            phone_no=formValue["phone_no"].value(),
-            agent_id = request.user)
-        if check_contact.exists():
-            return JsonResponse({'error':'This Field is already created'})
+        formValue = request.POST
+        # print(formValue)
+        print(formValue)
+        if contact.objects.filter(phone_no = formValue["phone_no"]).exists():
+            return JsonResponse({'error':'This phone no is already added in system'})
         else:
-            contact.objects.create(
-                phone_no=formValue["phone_no"].value(), 
-                first_name = formValue["first_name"].value(),
-                last_name = formValue["last_name"].value(),
-                birthday = "2022-"+formValue["birthday"].value(),
-                anniversary = "2022-"+formValue["anniversary"].value(),
-                tags = formValue["tags"].value(),
-                override_timezone = formValue["override_timezone"].value(), 
+            created_contact_id = contact.objects.create(
+                phone_no=formValue["phone_no"], 
+                first_name = formValue["first_name"],
+                last_name = formValue["last_name"],
+                birthday = "2022-"+formValue["birthday"],
+                anniversary = "2022-"+formValue["anniversary"],
+                tags = formValue.getlist("tags[]"),
+                override_timezone = formValue["override_timezone"], 
                 agent_id = request.user
             )
+            if json.loads(formValue.get('custom_fields')):
+                custom_field_list = json.loads(formValue.get('custom_fields'))
+                for current_field in custom_field_list:
+                    custom_field_obj = custom_field.objects.get(pk=current_field[0])
+                    field_data.objects.create(
+                        contact_id = created_contact_id,
+                        custom_field_id = custom_field_obj,
+                        field_data = current_field[1]
+                )
             return JsonResponse({'success':'success'})
         # return JsonResponse({'error':'Something Wrong Happened please try again'})
         # print(formValue)
@@ -132,6 +167,11 @@ class contactFormClass(View):
 
 
 # document.getElementsByName("tags")[0].selectedOptions for getting value of multiple select 
+@method_decorator(login_required(login_url=('../')), name='dispatch')
+class editContactClass(View):
+    def get(self, request, *args):
+        return JsonResponse({'success':'success','id':args})
+
 
 @method_decorator(login_required(login_url=('../')), name='dispatch')
 class logoutClass(View):

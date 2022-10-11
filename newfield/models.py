@@ -1,5 +1,6 @@
 from datetime import datetime
 from email.policy import default
+from enum import unique
 from tkinter import CASCADE
 from django.db import models
 from django.contrib.auth.models import User
@@ -7,10 +8,10 @@ from django.contrib.auth.models import User
 
 class contact(models.Model):
     tag_list = (
-        ('birth','Birthday'),
-        ('anv','Anniversary'),
-        ('wed','Wedding'),
-        ('pty','Party'),
+        ('Birthday','Birthday'),
+        ('Anniversary','Anniversary'),
+        ('Wedding','Wedding'),
+        ('Party','Party'),
         )
 
     timezone_list = (
@@ -20,15 +21,18 @@ class contact(models.Model):
         ('JST','Japan Standard Time'),
         )
 
-    phone_no = models.CharField(max_length=10)
+    phone_no = models.CharField(max_length=10, unique=True)
     first_name = models.CharField(max_length = 30)
     last_name = models.CharField(max_length = 30)
-    birthday = models.DateField()
-    anniversary = models.DateField()
-    tags = models.CharField(max_length = 20, choices = tag_list)
-    override_timezone = models.CharField(max_length = 5, choices = timezone_list)
+    birthday = models.DateField(default=None, null=True)
+    anniversary = models.DateField(default=None, null=True)
+    tags = models.CharField(max_length = 20, choices = tag_list, null=True)
+    override_timezone = models.CharField(max_length = 5, choices = timezone_list, null=True)
     add_date = models.DateTimeField(default = datetime.now())
     agent_id = models.ForeignKey(User, default=None,on_delete=models.CASCADE,null=True)
+
+    def __str__(self):
+        return self.first_name+" "+self.last_name
 
 
 class custom_field(models.Model):
@@ -45,7 +49,10 @@ class custom_field(models.Model):
     add_date = models.DateTimeField(default = datetime.now())
     agent_id = models.ForeignKey(User, default=None,on_delete=models.CASCADE,null=True)
 
+    def __str__(self):
+        return self.field_name
+
 class field_data(models.Model):
     custom_field_id = models.ForeignKey(custom_field,default=None, on_delete=models.CASCADE)
     contact_id = models.ForeignKey(contact,default=None, on_delete=models.CASCADE)
-    field_data = models.TextField()
+    field_data = models.TextField(null=True,default=None)
