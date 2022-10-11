@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.views import View
 import json
@@ -7,7 +7,7 @@ from newfield.models import *
 from django.contrib.auth import authenticate, login, logout
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-
+from django.views.generic.base import RedirectView
 # Create your views here.
 
 class loginClass(View):
@@ -86,42 +86,21 @@ class customFieldClass(View):
 class contactFormClass(View):
     contact_form = contactForm
     template_name = 'contactForm.html'
-    def get(self, request, *id):
-        if id is None:
-            all_fields = custom_field.objects.filter(agent_id = request.user.id)
-            all_contact = contact.objects.filter(agent_id = request.user.id)
-            fields_data = []
-            for field in all_fields:
-                field_data = {
-                    'id':field.id,
-                    'name':field.field_name,
-                    'type':field.field_type,
-                    'place_holder':field.place_holder,
-                }
-                fields_data.append(field_data)
-            
-            contacts_data = []
-            for cur_contant in all_contact:
-                contact_data = {
-                    'id':cur_contant.id,
-                    'number':cur_contant.phone_no,
-                    'name':cur_contant.first_name+" "+cur_contant.last_name,
-                    'date':cur_contant.add_date,
-                }
-                contacts_data.append(contact_data)
-            return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data,'contacts_data':contacts_data})
-        else:
-            all_fields = custom_field.objects.filter(agent_id = request.user.id)
-            fields_data = []
-            for field in all_fields:
-                cur_field = {
-                    'id':field.id,
-                    'name':field.field_name,
-                    'type':field.field_type,
-                    'place_holder':field.place_holder,
-                }
-                fields_data.append(cur_field)
-            cur_contant = contact.objects.get(pk = id)
+    def get(self, request):
+        all_fields = custom_field.objects.filter(agent_id = request.user.id)
+        all_contact = contact.objects.filter(agent_id = request.user.id)
+        fields_data = []
+        for field in all_fields:
+            cur_field = {
+                'id':field.id,
+                'name':field.field_name,
+                'type':field.field_type,
+                'place_holder':field.place_holder,
+            }
+            fields_data.append(cur_field)
+        
+        contacts_data = []
+        for cur_contant in all_contact:
             contact_data = {
                 'id':cur_contant.id,
                 'number':cur_contant.phone_no,
@@ -129,10 +108,8 @@ class contactFormClass(View):
                 'date':cur_contant.add_date,
             }
             contacts_data.append(contact_data)
-            field_data_obj = field_data.objects.filter(contact_id = id)
-            return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data,'contacts_data':contacts_data})
-    # def get(self, request, id):
-    #     return render(request, self.template_name, {'success':'success','id':id})
+        return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data,'contacts_data':contacts_data})
+
     def post(self, request):
         formValue = request.POST
         # print(formValue)
@@ -164,14 +141,35 @@ class contactFormClass(View):
         # print(formValue)
         # return HttpResponse(formValue)
         # return render(request, self.template_name, {'contactForm':self.contact_form})
-
-
 # document.getElementsByName("tags")[0].selectedOptions for getting value of multiple select 
+
 @method_decorator(login_required(login_url=('../')), name='dispatch')
 class editContactClass(View):
-    def get(self, request, *args):
-        return JsonResponse({'success':'success','id':args})
+    def get(self, request, id):
+            contacts_data = {}
+            cur_contant = contact.objects.get(pk = id, agent_id = request.user)
+            contacts_data['contact_id'] = cur_contant.id
+            contacts_data['number'] = cur_contant.phone_no
+            contacts_data['firstname'] = cur_contant.first_name
+            contacts_data['lastname'] = cur_contant.last_name
+            contacts_data['date'] = cur_contant.add_date
+            contacts_data['tags'] = cur_contant.get_tags_display()
 
+            all_fields = custom_field.objects.filter(agent_id = request.user.id)
+            fields_data = []
+            for field in all_fields:
+                field_data_value = field_data.objects.get(custom_field_id = field, contact_id = cur_contant)
+                cur_field = {
+                    'field_id':field.id,
+                    'name':field.field_name,
+                    'type':field.field_type,
+                    'place_holder':field.place_holder,
+                    'field_data_id':field_data_value.field_data,
+                    'value':field_data_value.field_data,
+                }
+                fields_data.append(cur_field)
+            contacts_data['user_fields'] = fields_data
+            return JsonResponse({'success':'success','fields_data':contacts_data})
 
 @method_decorator(login_required(login_url=('../')), name='dispatch')
 class logoutClass(View):

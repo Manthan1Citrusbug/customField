@@ -47,20 +47,25 @@ submitForm.onsubmit = function(event) {
 }
 
 
-// function edit_contact(cur_id){
-//     $.ajax({
-//         url : "/edit-contact/", // the endpoint
-//         type : "GET", // http method
-//         data : {'id':cur_id}, // data sent with the post request
-//         // handle a successful response
-//         success : function(returnValue) {
-//             if ('success' in returnValue){
-//                 console.log('success')
-//             }
-
-//             else{
-//                 console.log('error')
-//             }
-//         },
-//     });
-// }
+function edit_contact(cur_id){
+    $.ajax({
+        url : cur_id+"/", // the endpoint
+        type : "GET", // http method
+        // handle a successful response
+        success : function(returnValue) {
+            if('success' in returnValue){
+                console.log(returnValue);
+                var edit_cont = document.getElementById('edit_cont').options;
+                for(var i =0; i < edit_cont.length; i++){
+                    if (edit_cont[i].text == returnValue['field_type']['tags']){
+                        console.log('passs')
+                    }
+                }
+            }
+            else{
+                alert('Some Error Occur please reload the page');
+                location.reload()
+            }
+        },
+    });
+}
