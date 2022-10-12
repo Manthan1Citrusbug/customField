@@ -29,7 +29,7 @@ class contactForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs = {'placeholder':'Enter Lastname','pattern':'[a-zA-Z]+'}),
             'birthday': forms.DateInput(attrs = {'class':'date_input', 'id':'rw_date_month3','placeholder':"mm-dd"}),
             'anniversary': forms.DateInput(attrs = {'class':'date_input', 'id':'rw_date_month4','placeholder':"mm-dd"}),
-            'tags': forms.SelectMultiple(attrs = {'class':"js-states form-control",'id':"add_cont"}),
+            'tags': forms.Select(attrs = {'class':"js-states form-control"}),
             'override_timezone': forms.Select(attrs = {'class':"js-states form-control"}),
         }
 

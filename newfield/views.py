@@ -7,7 +7,6 @@ from newfield.models import *
 from django.contrib.auth import authenticate, login, logout
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.views.generic.base import RedirectView
 # Create your views here.
 
 class loginClass(View):
@@ -89,46 +88,26 @@ class contactFormClass(View):
     def get(self, request):
         all_fields = custom_field.objects.filter(agent_id = request.user.id)
         all_contact = contact.objects.filter(agent_id = request.user.id)
-        fields_data = []
-        for field in all_fields:
-            cur_field = {
-                'id':field.id,
-                'name':field.field_name,
-                'type':field.field_type,
-                'place_holder':field.place_holder,
-            }
-            fields_data.append(cur_field)
-        
-        contacts_data = []
-        for cur_contant in all_contact:
-            contact_data = {
-                'id':cur_contant.id,
-                'number':cur_contant.phone_no,
-                'name':cur_contant.first_name+" "+cur_contant.last_name,
-                'date':cur_contant.add_date,
-            }
-            contacts_data.append(contact_data)
-        return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':fields_data,'contacts_data':contacts_data})
+        return render(request, self.template_name, {'contactForm':self.contact_form,'username':request.user.username,'fields_data':all_fields,'contacts_data':all_contact})
 
     def post(self, request):
-        formValue = request.POST
-        # print(formValue)
-        print(formValue)
+        formValue = json.loads(request.POST['data_value'])
+        print("CONTACT-FORM:  ",formValue)
         if contact.objects.filter(phone_no = formValue["phone_no"]).exists():
-            return JsonResponse({'error':'This phone no is already added in system'})
+            return JsonResponse({'success':False,'error':'This phone no is already added in system'})
         else:
             created_contact_id = contact.objects.create(
                 phone_no=formValue["phone_no"], 
                 first_name = formValue["first_name"],
                 last_name = formValue["last_name"],
-                birthday = "2022-"+formValue["birthday"],
-                anniversary = "2022-"+formValue["anniversary"],
-                tags = formValue.getlist("tags[]"),
+                birthday = formValue["birthday"],
+                anniversary = formValue["anniversary"],
+                tags = formValue["tags"],
                 override_timezone = formValue["override_timezone"], 
                 agent_id = request.user
             )
-            if json.loads(formValue.get('custom_fields')):
-                custom_field_list = json.loads(formValue.get('custom_fields'))
+            if formValue['custom_fields']:
+                custom_field_list = formValue['custom_fields']
                 for current_field in custom_field_list:
                     custom_field_obj = custom_field.objects.get(pk=current_field[0])
                     field_data.objects.create(
@@ -136,7 +115,7 @@ class contactFormClass(View):
                         custom_field_id = custom_field_obj,
                         field_data = current_field[1]
                 )
-            return JsonResponse({'success':'success'})
+            return JsonResponse({'success':True})
         # return JsonResponse({'error':'Something Wrong Happened please try again'})
         # print(formValue)
         # return HttpResponse(formValue)
@@ -147,29 +126,62 @@ class contactFormClass(View):
 class editContactClass(View):
     def get(self, request, id):
             contacts_data = {}
-            cur_contant = contact.objects.get(pk = id, agent_id = request.user)
-            contacts_data['contact_id'] = cur_contant.id
-            contacts_data['number'] = cur_contant.phone_no
-            contacts_data['firstname'] = cur_contant.first_name
-            contacts_data['lastname'] = cur_contant.last_name
-            contacts_data['date'] = cur_contant.add_date
-            contacts_data['tags'] = cur_contant.get_tags_display()
-
-            all_fields = custom_field.objects.filter(agent_id = request.user.id)
+            cur_contact = contact.objects.get(pk = id, agent_id = request.user)
+            contacts_data['contact_id'] = cur_contact.id
+            contacts_data['number'] = cur_contact.phone_no
+            contacts_data['firstname'] = cur_contact.first_name
+            contacts_data['lastname'] = cur_contact.last_name
+            contacts_data['birthdate'] = cur_contact.birthday
+            contacts_data['anniversary'] = cur_contact.anniversary
+            contacts_data['tags'] = cur_contact.tags
+            contacts_data['override_timezone'] = cur_contact.override_timezone
+            all_fields = custom_field.objects.filter(agent_id = request.user)
             fields_data = []
             for field in all_fields:
-                field_data_value = field_data.objects.get(custom_field_id = field, contact_id = cur_contant)
-                cur_field = {
-                    'field_id':field.id,
-                    'name':field.field_name,
-                    'type':field.field_type,
-                    'place_holder':field.place_holder,
-                    'field_data_id':field_data_value.field_data,
-                    'value':field_data_value.field_data,
-                }
+                try:
+                    field_data_value = field_data.objects.get(custom_field_id = field, contact_id = cur_contact)
+                    cur_field = {
+                        'name':field.field_name,
+                        'value':field_data_value.field_data,
+                    }
+                except field_data.DoesNotExist:
+                    cur_field = {
+                        'name':field.field_name,
+                        'value':"",
+                    }
                 fields_data.append(cur_field)
+
             contacts_data['user_fields'] = fields_data
             return JsonResponse({'success':'success','fields_data':contacts_data})
+    
+    def post(self, request):
+        edit_data = json.loads(request.POST['data_value'])
+        print("This is JSON Response data",edit_data)
+        cur_contact = contact.objects.get(pk = edit_data['client_id'], agent_id = request.user)
+        cur_contact.phone_no = edit_data['phone_no']
+        cur_contact.first_name = edit_data['first_name']
+        cur_contact.last_name = edit_data['last_name']
+        cur_contact.birthday = edit_data['birthday']
+        cur_contact.anniversary = edit_data['anniversary']
+        cur_contact.tags = edit_data['tags']
+        cur_contact.override_timezone = edit_data['override_timezone']
+        cur_contact.save()
+
+        all_fields = edit_data['custom_fields']
+        for field in all_fields:
+            cur_custom_field = custom_field.objects.get(pk=field[0], agent_id = request.user.id)
+            try:
+                field_data_value = field_data.objects.get(custom_field_id = cur_custom_field, contact_id = cur_contact)
+                field_data_value.field_data = field[1]
+                field_data_value.save()
+            except field_data.DoesNotExist:
+                field_data.objects.create(
+                    contact_id = cur_contact,
+                    custom_field_id = cur_custom_field,
+                    field_data =  field[1]
+                )
+        
+        return JsonResponse({'success':'success'})
 
 @method_decorator(login_required(login_url=('../')), name='dispatch')
 class logoutClass(View):

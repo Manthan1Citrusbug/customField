@@ -145,14 +145,26 @@ $(function () {
   $("#datepicker3").datepicker({ dateFormat: "dd/mm/yy" }).val();
 });
 $(function () {
+  $("#rw_date_month1").datepicker({
+    dateFormat: "yy-mm-dd",
+    dropdownParent: $(".add_contact"),
+  });
+});
+$(function () {
+  $("#rw_date_month2").datepicker({
+    dateFormat: "yy-mm-dd",
+    dropdownParent: $(".add_contact"),
+  });
+});
+$(function () {
   $("#rw_date_month3").datepicker({
-    dateFormat: "mm-dd",
+    dateFormat: "yy-mm-dd",
     dropdownParent: $(".add_contact"),
   });
 });
 $(function () {
   $("#rw_date_month4").datepicker({
-    dateFormat: "mm-dd",
+    dateFormat: "yy-mm-dd",
     dropdownParent: $(".add_contact"),
   });
 });

@@ -116,11 +116,11 @@
                                         <td>
                                         <div class="rw_checkbox ">
                                             <input type="checkbox" id="checkbox2" class="check_input" checked>
-                                            <label for="checkbox2">{{contact.number}}</label>
+                                            <label for="checkbox2">{{contact.phone_no}}</label>
                                         </div>
                                         </td>
-                                        <td>{{ contact.name }}</td>
-                                        <td>Added on {{ contact.date }}</td>
+                                        <td>{{ contact.first_name }} {{contact.last_name}}</td>
+                                        <td>Added on {{ contact.add_date }}</td>
                                         <td class="text-center">$100</td>
                                         <td class="text-center">
                                             <div class="rw_toggle_switch">
@@ -308,11 +308,12 @@
                     </div>
                     <div class="modal-body">
                         <div class="row">
+                            <input type="hidden" id="edit_id">
                             <div class="col-md-12">
                                 <div class="rw_form_inputs">
                                     <label class="rw_form_label">Phone Number</label>
                                     <div class="rw_input">
-                                        <input type="number" placeholder="Phone Number" value="919999999999">
+                                        <input type="number" id="edit_phone" placeholder="Phone Number"pattern="[0-9]+" max_length="10" required>
                                         <span class="input_icon phone"></span>
                                     </div>
                                 </div>
@@ -321,7 +322,7 @@
                                 <div class="rw_form_inputs">
                                     <label class="rw_form_label">First Name</label>
                                     <div class="rw_input">
-                                        <input type="text" placeholder="First Name" value="john">
+                                        <input type="text" id="edit_fname" placeholder="First Name" pattern="[a-zA-Z]+" required>
                                     </div>
                                 </div>
                             </div>
@@ -329,24 +330,26 @@
                                 <div class="rw_form_inputs">
                                     <label class="rw_form_label">Last Name</label>
                                     <div class="rw_input">
-                                        <input type="text" placeholder="Last Name" value="due">
+                                        <input type="text" id="edit_lname" placeholder="Last Name" pattern="[a-zA-Z]+" required>
                                     </div>
                                 </div>
                             </div>
+                            
                             <div class="col-md-6">
                                 <div class="rw_form_inputs rw_date_input">
-                                    <label class="rw_form_label">Birthday</label>
+                                    <label  class="rw_form_label">Birthday</label>
                                     <div class="rw_input">
-                                        <input type="text" placeholder="mm-dd" id="rw_date_month1">
+                                        <input type="text" class="date_input" placeholder="mm-dd" id="rw_date_month1" required>
                                         <span class="input_icon calendar"></span>
                                     </div>
                                 </div>
                             </div>
+                            
                             <div class="col-md-6">
                                 <div class="rw_form_inputs rw_date_input">
                                     <label class="rw_form_label">Anniversary</label>
                                     <div class="rw_input">
-                                        <input type="text" placeholder="mm-dd" id="rw_date_month2">
+                                        <input type="text" class="date_input" placeholder="mm-dd" id="rw_date_month2" required>
                                         <span class="input_icon calendar"></span>
                                     </div>
                                 </div>
@@ -356,11 +359,11 @@
                                     <label class="rw_form_label">Tags</label>
                                     <div class="rw_select2">
                                         <span class="input_icon caret"></span>
-                                        <select id="edit_cont" class="js-states form-control" multiple>
-                                            <option>birthday</option>
-                                            <option>wedding</option>
-                                            <option>Anniversary</option>
-                                            <option>Party</option>
+                                        <select id="edit_tags" class="js-states form-control" required>
+                                            <option value="Birthday">Birthday</option>
+                                            <option value="Wedding">Wedding</option>
+                                            <option value="Anniversary">Anniversary</option>
+                                            <option value="Party">Party</option>
                                         </select>
                                     </div>
                                 </div>
@@ -368,41 +371,34 @@
                             <div class="col-md-12">
                                 <div class="rw_form_inputs">
                                     <label class="rw_form_label">Override Time Zone</label>
-                                    <div class="rw_bootstrap_drop_down">
-                                        <div class="dropdown">
-                                            <button class="btn  dropdown-toggle" type="button" 
-                                                data-bs-toggle="dropdown" aria-expanded="false">
-                                                EST
-                                            </button>
-                                            <ul class="dropdown-menu" >
-                                                <li><a class="dropdown-item" href="#">EST</a></li>
-                                                <li><a class="dropdown-item" href="#">EST</a></li>
-                                                <li><a class="dropdown-item" href="#">EST</a></li>
-                                                <li><a class="dropdown-item" href="#">EST</a></li>
-                                                <li><a class="dropdown-item" href="#">EST</a></li>
-                                                <li><a class="dropdown-item" href="#">EST</a></li>
-                                            </ul>
-                                        </div>
+                                    <div class="rw_select2">
+                                        <span class="input_icon caret"></span>
+                                        <select id="edit_override" class="js-states form-control" required>
+                                            <option value="EST">Eastern Standard Time</option>
+                                            <option value="IST">India Standard Time</option>
+                                            <option value="ACT">Australian Central Time</option>
+                                            <option value="JST">Japan Standard Time</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
                             {% if fields_data %}
-                            {% for field in fields_data %}
-                                <div class="col-md-12">
-                                    <div class="rw_form_inputs">
-                                        <label class="rw_form_label">{{ field.name }}</label>
-                                        <input type="hidden" class="custom-field-id" id="id_{{field.id}}" value="{{field.id}}"/>
-                                        <div class="rw_input">
-                                            {% if field.type == 'Large Text' %}
-                                                <textarea cols="70%" rows="3" name="{{field.name|lower}}" class = "custom-fields" id="id_{{field.name}}"  ></textarea>
-                                            {% else %}
-                                                <input type="{{field.type}}" name="{{field.name|lower}}" class = "custom-fields {%if field.type == 'Date' %}date_input{%endif%}" placeholder="{{field.place_holder}}" id="id_{{field.name}}" />
-                                            {% endif %}
+                                {% for field in fields_data %}
+                                    <div class="col-md-12">
+                                        <div class="rw_form_inputs">
+                                            <label class="rw_form_label">{{ field.field_name }}</label>
+                                            <input type="hidden" class="custom-edit-id" id="id_{{field.id}}" value="{{field.id}}"/>
+                                            <div class="rw_input">
+                                                {% if field.field_type == 'Large Text' %}
+                                                    <textarea cols="70%" rows="3" name="{{field.field_name|lower}}" class = "custom-edit" id="edit_{{field.field_name}"  ></textarea>
+                                                {% else %}
+                                                    <input type="{{field.field_type}}" name="{{field.field_namelower}}" class = "custom-edit {%if field.field_type == 'Date' %}date_input{%endif%}" placeholder="{{field.place_holder}}" id="edit_{{field.field_name}}" />
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
+                                {% endfor %}
+                            {% endif %}
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -508,13 +504,14 @@
                                 </div>
                             {% endfor %}
                         {% endif %}
+                        <div class="text-danger" role="alert" id="error-add-contact"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                <ul class="modal_btns">
-                    <li><a href="javascript:;" class="modal_btn cancel" data-bs-dismiss="modal">cancel</a></li>
-                    <li><button type="submit" href="javascript:;" class="modal_btn" >add</button></li>
-                </ul>
+                    <ul class="modal_btns">
+                        <li><a href="javascript:;" class="modal_btn cancel" data-bs-dismiss="modal">cancel</a></li>
+                        <li><button type="submit" href="javascript:;" class="modal_btn" >add</button></li>
+                    </ul>
                 </div>
             </div>
         </form>
