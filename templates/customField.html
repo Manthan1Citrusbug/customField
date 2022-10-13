@@ -558,11 +558,11 @@
                                                 {% for field in all_fields %}                    
                                                     <tr>
                                                         <td>
-                                                            {{ field.name }}
+                                                            {{ field.field_name }}
                                                             </td>
-                                                        <td>{{ field.type }}</td>
+                                                        <td>{{ field.field_type }}</td>
                                                             <td><div class="default_label"><span>{{ field.place_holder}}</span></div></td>
-                                                        <td>Added on {{field.date}}</td>
+                                                        <td>Added on {{field.add_date}}</td>
                                                         <td class="text-center">
                                                             <div class="action_dropdown">
                                                             <ul class="drop_ul">
@@ -1076,6 +1076,7 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="error text-danger"><p id="error"></p></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1113,13 +1114,12 @@
                 }, // data sent with the post request
                 // handle a successful response
                 success : function(returnValue) {
-                    if ('success' in returnValue){
+                    if (returnValue.success == true){
                         location.reload()
                     }
 
                     else{
-                        submitForm.reset();
-                        alert(returnValue.error)
+                        $('#error').text(returnValue.error)
                     }
                 },
             });

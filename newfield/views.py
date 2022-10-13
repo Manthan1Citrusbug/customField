@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
+from django.db import IntegrityError
 from django.views import View
 import json
 from newfield.forms import *
@@ -9,39 +10,48 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 # Create your views here.
 
+# Handle login page get and post request
 class loginClass(View):
     template_name = "login.html"
-    login_Form = loginForm
+    login_Form = loginForm      #login model form
+
+    # login get method
     def get(self, request):
         return render(request, self.template_name, {'loginForm':self.login_Form})
+    
+    # login post method
     def post(self, request):
         loginForm_data = loginForm(request.POST)
-        if loginForm_data.is_valid():
+        
+        # check form validation
+        if loginForm_data.is_valid():   
             loginVerify = authenticate(request, username=loginForm_data['username'].value(), password=loginForm_data['password'].value())
             if loginVerify is not None:
                 login(request, loginVerify)
-                return JsonResponse({'success': 'custom-field/'})
+                return JsonResponse({'success':True,'url':'custom-field/'})
             else:
-                return JsonResponse({'error':'Enter correct Email or Password'})
+                return JsonResponse({'success':False,'error':'Enter correct Email or Password'})
         return render(request, self.template_name, {'loginForm':self.login_Form})
 
 
-
+# handle register page post and get request
 class registerClass(View):
     template_name = 'register.html'
-    registerationForm = registerForm
+    registerationForm = registerForm    # register model form
+    # register get request
     def get(self, request):
         return render(request, self.template_name,{'registerForm':self.registerationForm})
+
+    # register post request
     def post(self, request):
         user_data = registerForm(request.POST)
         if user_data.is_valid():
-            print(user_data)
             user_value = user_data.save()
             if user_value is not None:
                 user_auth = authenticate(request, user_data['username'].value(),user_data['password'].value())
                 if user_auth is not None:
                     login(request, user_auth)
-            return HttpResponse('Success  ',user_value)
+                    return redirect('custom-field/')
         return render(request, self.template_name,{'registerForm':self.registerationForm})
 
 
@@ -52,31 +62,23 @@ class customFieldClass(View):
     template_name = 'customField.html'
     def get(self, request):
         all_fields = custom_field.objects.all().filter(agent_id = request.user.id)
-        fields_data = []
-        for field in all_fields:
-            field_data = {
-                'name':field.field_name,
-                'type':field.field_type,
-                'place_holder':field.place_holder,
-                'date':field.add_date,
-            }
-            fields_data.append(field_data)
-        return render(request, self.template_name, {'customFieldForm':self.customField_form,'username':request.user.username, 'all_fields':fields_data})
+        return render(request, self.template_name, {'customFieldForm':self.customField_form,'username':request.user.username, 'all_fields':all_fields})
     def post(self, request):
         formValue = customFieldForm(request.POST)
         if formValue.is_valid():
-            check_field = custom_field.objects.filter(field_name=formValue["field_name"].value(), field_type = formValue["field_type"].value(), agent_id = request.user)
+            field_name_cap = formValue["field_name"].value().capitalize()    # make field name capitalize
+            check_field = custom_field.objects.filter(field_name=field_name_cap, field_type = formValue["field_type"].value(), agent_id = request.user)
             if check_field.exists():
-                return JsonResponse({'error':'This Field is already created'})
+                return JsonResponse({'success':False,'error':'This Field is already created'})
             else:
                 custom_field.objects.create(
-                    field_name=formValue["field_name"].value(), 
+                    field_name=field_name_cap, 
                     field_type = formValue["field_type"].value(), 
                     place_holder = formValue["place_holder"].value(), 
                     agent_id = request.user
                 )
-                return JsonResponse({'success':'success'})
-        return JsonResponse({'error':'Something Wrong Happened please try again'})
+                return JsonResponse({'success':True})
+        return JsonResponse({'success':False,'error':'Something Wrong Happened please try again'})
         # return render(request, self.template_name, {'customFieldForm':self.customField_form})
 
 
@@ -92,7 +94,6 @@ class contactFormClass(View):
 
     def post(self, request):
         formValue = json.loads(request.POST['data_value'])
-        print("CONTACT-FORM:  ",formValue)
         if contact.objects.filter(phone_no = formValue["phone_no"]).exists():
             return JsonResponse({'success':False,'error':'This phone no is already added in system'})
         else:
@@ -116,47 +117,41 @@ class contactFormClass(View):
                         field_data = current_field[1]
                 )
             return JsonResponse({'success':True})
-        # return JsonResponse({'error':'Something Wrong Happened please try again'})
-        # print(formValue)
-        # return HttpResponse(formValue)
-        # return render(request, self.template_name, {'contactForm':self.contact_form})
-# document.getElementsByName("tags")[0].selectedOptions for getting value of multiple select 
 
 @method_decorator(login_required(login_url=('../')), name='dispatch')
 class editContactClass(View):
     def get(self, request, id):
-            contacts_data = {}
-            cur_contact = contact.objects.get(pk = id, agent_id = request.user)
-            contacts_data['contact_id'] = cur_contact.id
-            contacts_data['number'] = cur_contact.phone_no
-            contacts_data['firstname'] = cur_contact.first_name
-            contacts_data['lastname'] = cur_contact.last_name
-            contacts_data['birthdate'] = cur_contact.birthday
-            contacts_data['anniversary'] = cur_contact.anniversary
-            contacts_data['tags'] = cur_contact.tags
-            contacts_data['override_timezone'] = cur_contact.override_timezone
-            all_fields = custom_field.objects.filter(agent_id = request.user)
-            fields_data = []
-            for field in all_fields:
-                try:
-                    field_data_value = field_data.objects.get(custom_field_id = field, contact_id = cur_contact)
-                    cur_field = {
-                        'name':field.field_name,
-                        'value':field_data_value.field_data,
-                    }
-                except field_data.DoesNotExist:
-                    cur_field = {
-                        'name':field.field_name,
-                        'value':"",
-                    }
-                fields_data.append(cur_field)
+        contacts_data = {}
+        cur_contact = contact.objects.get(pk = id, agent_id = request.user)
+        contacts_data['contact_id'] = cur_contact.id
+        contacts_data['number'] = cur_contact.phone_no
+        contacts_data['firstname'] = cur_contact.first_name
+        contacts_data['lastname'] = cur_contact.last_name
+        contacts_data['birthdate'] = cur_contact.birthday
+        contacts_data['anniversary'] = cur_contact.anniversary
+        contacts_data['tags'] = cur_contact.tags
+        contacts_data['override_timezone'] = cur_contact.override_timezone
+        all_fields = custom_field.objects.filter(agent_id = request.user)
+        fields_data = []
+        for field in all_fields:
+            try:
+                field_data_value = field_data.objects.get(custom_field_id = field, contact_id = cur_contact)
+                cur_field = {
+                    'name':field.field_name,
+                    'value':field_data_value.field_data,
+                }
+            except field_data.DoesNotExist:
+                cur_field = {
+                    'name':field.field_name,
+                    'value':"",
+                }
+            fields_data.append(cur_field)
 
-            contacts_data['user_fields'] = fields_data
-            return JsonResponse({'success':'success','fields_data':contacts_data})
+        contacts_data['user_fields'] = fields_data
+        return JsonResponse({'success':True,'fields_data':contacts_data})
     
     def post(self, request):
         edit_data = json.loads(request.POST['data_value'])
-        print("This is JSON Response data",edit_data)
         cur_contact = contact.objects.get(pk = edit_data['client_id'], agent_id = request.user)
         cur_contact.phone_no = edit_data['phone_no']
         cur_contact.first_name = edit_data['first_name']
@@ -165,7 +160,10 @@ class editContactClass(View):
         cur_contact.anniversary = edit_data['anniversary']
         cur_contact.tags = edit_data['tags']
         cur_contact.override_timezone = edit_data['override_timezone']
-        cur_contact.save()
+        try:
+            cur_contact.save()
+        except IntegrityError:
+            return JsonResponse({'success':False,"error":'This phone no is already added in system'})
 
         all_fields = edit_data['custom_fields']
         for field in all_fields:
@@ -180,8 +178,7 @@ class editContactClass(View):
                     custom_field_id = cur_custom_field,
                     field_data =  field[1]
                 )
-        
-        return JsonResponse({'success':'success'})
+        return JsonResponse({'success':True})
 
 @method_decorator(login_required(login_url=('../')), name='dispatch')
 class logoutClass(View):

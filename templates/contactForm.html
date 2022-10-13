@@ -313,7 +313,7 @@
                                 <div class="rw_form_inputs">
                                     <label class="rw_form_label">Phone Number</label>
                                     <div class="rw_input">
-                                        <input type="number" id="edit_phone" placeholder="Phone Number"pattern="[0-9]+" max_length="10" required>
+                                        <input type="text" id="edit_phone" placeholder="Phone Number"pattern="[0-9]+" minlength="10" maxlength="10" required>
                                         <span class="input_icon phone"></span>
                                     </div>
                                 </div>
@@ -399,6 +399,7 @@
                                     </div>
                                 {% endfor %}
                             {% endif %}
+                            <div class="text-danger" role="alert" id="error-edit-contact"></div>
                         </div>
                     </div>
                     <div class="modal-footer">

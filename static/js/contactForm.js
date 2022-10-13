@@ -1,15 +1,9 @@
-
+// add contact form submit through ajax post method 
 var submitForm = document.getElementById('contact-form');
 submitForm.onsubmit = function(event) {
     event.preventDefault();
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    // var selected_list = document.getElementsByName("tags")[0].selectedOptions;
-    // var selected_value = [];
-    // for (var i = 0; i < selected_list.length; i++) {       
-    //         selected_value.push(selected_list[i].value);
-    // }
-    
+
     var custom_field_list = [];
     var custom_field_values = document.querySelectorAll(".custom-fields");
     var custom_field_ids = document.querySelectorAll(".custom-field-id");
@@ -38,27 +32,33 @@ submitForm.onsubmit = function(event) {
                 location.reload()
             }
             else{
-                document.getElementById('error-add-contact').innerText = returnValue.error;
+                $('#error-add-contact').text(returnValue.error);
             }
         },
+        error : function(xhr,errmsg,err) {
+            $('#error-add-contact').text(returnValue.error);  // add the error to the dom
+            window.location.reload()  // add the error to the dom
+        }
     });
 }
 
-// convert date to yy-mm-dd formate
 
+// convert date to yy-mm-dd formate
 function date_maker(date_val){
     var date_parts = date_val.split('-');
     var date_val = new Date(date_parts[0], date_parts[1], date_parts[2]);
     return(date_val.getFullYear()+"-"+date_val.getMonth()+"-"+date_val.getDate())
 }
 
+
+// Edit Contact form display with data
 function edit_contact(cur_id){
     $.ajax({
         url : "edit-form/"+cur_id+"/", // the endpoint
         type : "GET", // http method
         // handle a successful response
         success : function(returnValue) {
-            if('success' in returnValue){
+            if(returnValue.success == true){
                 returnValue = returnValue['fields_data']
                 document.getElementById('edit_id').value = returnValue['contact_id'];
                 document.getElementById('edit_phone').value = returnValue['number'];
@@ -67,21 +67,9 @@ function edit_contact(cur_id){
                 document.getElementById('rw_date_month1').value = date_maker(returnValue['birthdate']);
                 document.getElementById('rw_date_month2').value = date_maker(returnValue['anniversary']);
                 document.getElementById('edit_tags').value = returnValue['tags']
-                // var tags_cont = document.getElementById('edit_tags').options;
-                // for(var i =0; i < returnValue['tags'].length; i++){
-                //     if (returnValue['tags'] == tags_cont[i].value){
-                //         tags_cont[i].setAttribute('selected','selected')
-                //         break;
-                //     }
-                // }
-                var time_cont = document.getElementById('edit_override').value = returnValue['override_timezone']
-                // for(var i =0; i < time_cont.length; i++){
-                //     if (returnValue['override_timezone'] == time_cont[i].value){
-                //         time_cont[i].setAttribute('selected','selected')
-                //     }
-                // }
+                document.getElementById('edit_override').value = returnValue['override_timezone']
                 data_field_values = returnValue['user_fields'];
-                console.log(data_field_values)
+
                 for(var i = 0; i < data_field_values.length; i++){
                     var cur_field = document.getElementById('edit_'+data_field_values[i]['name']);
                     if (cur_field.type == 'Date' && data_field_values[i]['value'] != ''){
@@ -92,14 +80,12 @@ function edit_contact(cur_id){
                     }
                 }
             }
-            else{
-                alert('Some Error Occur please reload the page');
-                location.reload()
-            }
         },
     });
 }
 
+
+// submit edit contact form data
 var submitEditForm = document.getElementById('edit-contact');
 submitEditForm.onsubmit = function(event) {
     event.preventDefault();
@@ -129,14 +115,19 @@ submitEditForm.onsubmit = function(event) {
         data : {'data_value':JSON.stringify(data_value)}, // data sent with the post request
         // handle a successful response
         success : function(returnValue) {
-            if ('success' in returnValue){
+            if (returnValue.success == true){
                 location.reload()
             }
 
             else{
-                submitForm.reset();
-                alert(returnValue.error)
+                $('#error-edit-contact').text(returnValue.error);
             }
+            //     alert(returnValue.error)
+            // }
         },
+        error : function(xhr,errmsg,err) {
+            $('#error-edit-contact').text("Oops! We have encountered an error: "+errmsg); // add the error to the dom
+            window.location.reload() // add the error to the dom
+        }
     });
 }

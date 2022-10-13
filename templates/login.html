@@ -44,7 +44,7 @@
                     <button type="submit" class="login_btn">login</button>
                 </div>
             </form>
-            <div class="error">
+            <div class="text-danger error">
                 <p id="error"></p>
             </div>
         </div>
@@ -63,8 +63,8 @@
                 // handle a successful response
                 success : function(returnValue) {
                     console.log('Inside ajax',returnValue);
-                    if ('success' in returnValue){
-                        location.replace(returnValue.success)
+                    if (returnValue.success == true){
+                        location.replace(returnValue.url)
                     }
                     else{
                         document.getElementById("id_username").value = '';
@@ -76,7 +76,6 @@
                 // handle a non-successful response
                 error : function(xhr,errmsg,err) {
                     $('#error').text("Oops! We have encountered an error: "+errmsg); // add the error to the dom
-                    window.location.reload() // add the error to the dom
                 }
             });
         }
