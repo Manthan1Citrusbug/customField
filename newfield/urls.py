@@ -9,7 +9,6 @@ urlpatterns = [
     path('contact-form/edit-form/',editContactClass.as_view(),name='editContactPost'),
     path('custom-field/',customFieldClass.as_view(),name='customField'),
     path('logout/',logoutClass.as_view(),name='logout'),
-
 ]
 
 
