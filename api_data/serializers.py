@@ -31,7 +31,7 @@ class CustomFieldSerializer(serializers.ModelSerializer):
 class FieldDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = field_data
-        fields =  ['custom_field_id','field_data']
+        fields =  ['id','custom_field_id','field_data']
 
 
 class ContactSerializer(serializers.ModelSerializer):
@@ -64,14 +64,14 @@ class ContactSerializer(serializers.ModelSerializer):
         fields_data = validated_data.get('fields')
         print(fields_data)
         for item in fields_data:
-            item_id = item.get('field_id')
+            item_id = item.get('custom_field_id')
             print(item_id)
             if item_id:
-                inv_item = field_data.objects.get(id = item_id, contact_id = instance)
-                print("INV ---- ",inv_item)
-                inv_item.field_data = item.get('field_data', inv_item.field_data)
-                inv_item.save()
-            else:
-                field_data.objects.create(contact_id=instance, **item)
-
+                try:
+                    inv_item = field_data.objects.get(custom_field_id = item_id.id, contact_id = instance)
+                    print("INV ---- ",inv_item)
+                    inv_item.field_data = item.get('field_data', inv_item.field_data)
+                    inv_item.save()
+                except field_data.DoesNotExist:
+                    field_data.objects.create(contact_id=instance, **item)
         return instance
