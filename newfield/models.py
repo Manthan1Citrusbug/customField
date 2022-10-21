@@ -50,6 +50,6 @@ class custom_field(models.Model):
         return self.field_name
 
 class field_data(models.Model):
-    custom_field_id = models.ForeignKey(custom_field,default=None, on_delete=models.CASCADE)
-    contact_id = models.ForeignKey(contact,default=None, on_delete=models.CASCADE)
+    custom_field_id = models.ForeignKey(custom_field,default=None, on_delete=models.CASCADE, null=True)
+    contact_id = models.ForeignKey(contact,default=None, on_delete=models.CASCADE,related_name='fields',null=True)
     field_data = models.TextField(null=True,default=None)
