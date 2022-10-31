@@ -40,19 +40,23 @@ class api_custom_field(ListAPIView):
         serializer = CustomFieldSerializer(data=request.data, context={
                                            'agent_id': request.user})
         if serializer.is_valid():
-            print(serializer.validated_data)
-            created_data = serializer.save()
-            # send success response
-            return Response(
-                {
-                    'Field Name': created_data.field_name,
-                    'Type': created_data.field_type,
-                    'Placeholder': created_data.place_holder,
-                    'Created on': created_data.add_date,
-                    'Agent ID': created_data.agent_id.id
-                },
-                status=status.HTTP_201_CREATED
-            )
+            try:
+                check_customField = custom_field.objects.get(field_type = request.data['field_type'], field_name = request.data['field_name'], agent_id = request.user)
+                return Response({'error':"Field Already Available"},status=status.HTTP_403_FORBIDDEN)
+            except custom_field.DoesNotExist:
+                created_data = serializer.save()
+                # send success response
+                return Response(
+                    {
+                        'ID': created_data.id,
+                        'Field Name': created_data.field_name,
+                        'Type': created_data.field_type,
+                        'Placeholder': created_data.place_holder,
+                        'Created on': created_data.add_date,
+                        'Agent ID': created_data.agent_id.id
+                    },
+                    status=status.HTTP_201_CREATED
+                )
         # send error massage
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -69,6 +73,7 @@ class api_custom_field(ListAPIView):
                 # send success response
                 return Response(
                     {
+                        'ID': created_data.id,
                         'Field Name': created_data.field_name,
                         'Type': created_data.field_type,
                         'Placeholder': created_data.place_holder,
@@ -88,14 +93,13 @@ class api_contact(ListAPIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     pagination_class = PageNumberPagination
-    filter_backends = [SearchFilter, ]
+    filter_backends = [SearchFilter]
     search_fields = ('first_name', 'last_name')
     # Send all data in the response
 
     def get(self, request):
         try:
-            cus_field_obj = self.filter_queryset(
-                contact.objects.filter(agent_id=request.user))
+            cus_field_obj = self.filter_queryset(contact.objects.filter(agent_id=request.user))
         except:
             # send error massage
             return Response("No Data Found", status=status.HTTP_204_NO_CONTENT)
@@ -132,7 +136,7 @@ class api_contact(ListAPIView):
         except contact.DoesNotExist:
             return Response({'error':"No Data Found"},status = status.HTTP_204_NO_CONTENT)
 
-        serializer = ContactSerializer(contact_obj, data = request.data, partial = True )
+        serializer = ContactSerializer(contact_obj, data = request.data, partial = True, context={'agent_id': request.user})
         if serializer.is_valid():
             print(serializer.validated_data)
             serializer.save()
@@ -148,11 +152,13 @@ class api_contact(ListAPIView):
     def delete(self, request):
         try:
             contact_obj = contact.objects.get(id=request.data["id"])
-            contact_obj.delete()
-
+            if contact_obj.agent_id == request.user:
+                contact_obj.delete()
+            else:
+                return Response({"error":"This Contact is not in your List"},status = status.HTTP_403_FORBIDDEN)
             # send success response
             return Response("Data Successfully Deleted", status=status.HTTP_204_NO_CONTENT)
-        except:
+        except contact.DoesNotExist:
             # send error massage
             return Response("No Data Found", status=status.HTTP_204_NO_CONTENT)
 

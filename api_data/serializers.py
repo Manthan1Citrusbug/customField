@@ -47,7 +47,8 @@ class ContactSerializer(serializers.ModelSerializer):
         contact_data.agent_id = self.context['agent_id']
         contact_data.save()
         for track_data in fields_data:
-            field_data.objects.create(contact_id=contact_data, **track_data)
+            if track_data['custom_field_id'].agent_id == self.context['agent_id']:
+                field_data.objects.create(contact_id=contact_data, **track_data)
         return contact_data
 
     def update(self, instance, validated_data):
@@ -62,16 +63,14 @@ class ContactSerializer(serializers.ModelSerializer):
         instance.override_timezone = validated_data.get('override_timezone', instance.override_timezone)
         instance.save()
         fields_data = validated_data.get('fields')
-        print(fields_data)
         for item in fields_data:
             item_id = item.get('custom_field_id')
-            print(item_id)
             if item_id:
                 try:
-                    inv_item = field_data.objects.get(custom_field_id = item_id.id, contact_id = instance)
-                    print("INV ---- ",inv_item)
-                    inv_item.field_data = item.get('field_data', inv_item.field_data)
-                    inv_item.save()
+                    if item_id.agent_id == self.context['agent_id']:
+                        inv_item = field_data.objects.get(custom_field_id = item_id.id, contact_id = instance)
+                        inv_item.field_data = item.get('field_data', inv_item.field_data)
+                        inv_item.save()
                 except field_data.DoesNotExist:
                     field_data.objects.create(contact_id=instance, **item)
         return instance
