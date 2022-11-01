@@ -36,11 +36,17 @@ class FieldDataSerializer(serializers.ModelSerializer):
 
 class ContactSerializer(serializers.ModelSerializer):
     fields = FieldDataSerializer(many=True,read_only=False)
+    field_count = serializers.SerializerMethodField(method_name="countoffields")
+    def countoffields(self,obj):
+        obj_field = field_data.objects.filter(contact_id = obj)
+        return len(obj_field)
+        
     class Meta:
         model = contact
-        fields =  ['id',"phone_no","first_name","last_name","birthday","anniversary","tags","override_timezone","add_date","agent_id","fields"]
+        fields =  ['id',"phone_no","first_name","last_name","birthday","anniversary","tags","override_timezone","add_date","agent_id","fields","field_count"]
         read_only_fields = ['id','add_date']
 
+    
     def create(self, validated_data):
         fields_data = validated_data.pop('fields')
         contact_data = contact.objects.create(**validated_data)
@@ -74,3 +80,4 @@ class ContactSerializer(serializers.ModelSerializer):
                 except field_data.DoesNotExist:
                     field_data.objects.create(contact_id=instance, **item)
         return instance
+
